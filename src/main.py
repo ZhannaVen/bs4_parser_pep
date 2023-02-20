@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import BASE_DIR, MAIN_DOC_URL
+from constants import BASE_DIR, MAIN_DOC_URL, PEP_DOC_URL
 from outputs import control_output
 from utils import get_response, find_tag
 
@@ -91,6 +91,17 @@ def download(session):
     with open(archive_path, 'wb') as file:
         file.write(response.content)
     logging.info(f'Архив был загружен и сохранён: {archive_path}')
+
+
+def pep(session):
+    response = get_response(session, PEP_DOC_URL)
+    if response is None:
+        return
+    soup = BeautifulSoup(response.text, 'lxml')
+    tr_tags = soup.find_all('tr', attrs={'class':'even-row','class':'odd-row'})
+    for tag in tr_tags:
+        pep_url = find_tag(tag, 'a')['href']
+    print(pep_url)   
 
 
 MODE_TO_FUNCTION = {
