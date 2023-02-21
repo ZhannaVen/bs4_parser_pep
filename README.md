@@ -21,7 +21,11 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-- 
+- The parser is launched from the ./src/:
+```bash
+usage: main.py [-h] [-c] [-o {pretty,file}] {whats-new,latest-versions,download,pep}
+```
+
 
 ## Author
 
