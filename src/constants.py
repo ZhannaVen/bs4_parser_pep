@@ -6,11 +6,11 @@ BASE_DIR = Path(__file__).parent
 DATETIME_FORMAT = '%Y-%m-%d_%H-%M-%S'
 PEP_DOC_URL = 'https://peps.python.org/'
 EXPECTED_STATUS = {
-        'A': ['Active', 'Accepted'],
+        'A': ['Accepted', 'Active'],
         'D': ['Deferred'],
         'F': ['Final'],
         'P': ['Provisional'],
         'R': ['Rejected'],
         'S': ['Superseded'],
         'W': ['Withdrawn'],
-        '': ['Draft', 'Active']}
+        '': ['Draft']}
