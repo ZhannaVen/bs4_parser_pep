@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import BASE_DIR, MAIN_DOC_URL, PEP_DOC_URL
+from constants import BASE_DIR, MAIN_DOC_URL, PEP_DOC_URL, EXPECTED_STATUS
 from outputs import control_output
 from utils import get_response, find_tag
 
@@ -24,7 +24,7 @@ def whats_new(session):
         'li',
         attrs={'class': 'toctree-l1'}
     )
-    results = [('Ссылка на статью', 'Заголовок', 'Редактор, автор')]
+    results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
     for section in tqdm(sections_by_python):
         version_a_tag = section.find('a')
         version_link = urljoin(whats_new_url, version_a_tag['href'])
@@ -98,16 +98,42 @@ def pep(session):
     if response is None:
         return
     soup = BeautifulSoup(response.text, 'lxml')
-    tr_tags = soup.find_all('tr', attrs={'class':'even-row','class':'odd-row'})
-    for tag in tr_tags:
-        pep_url = find_tag(tag, 'a')['href']
-    print(pep_url)   
+    section_tag = find_tag(soup, 'section', attrs={'id': 'numerical-index'})
+    tbody_tag = find_tag(section_tag, 'tbody')
+    tr_tags = tbody_tag.find_all('tr')
+    results = [('Статус', 'Количество')]
+    mismatch_num = 0
+    for tag in tqdm(tr_tags):
+        status_key = find_tag(tag, 'td').text[1:]
+        expected_status = EXPECTED_STATUS.get(status_key, [])
+        if not expected_status:
+            logging.info(f'Неизвестный статус: {status_key}')
+        pep_url = urljoin(PEP_DOC_URL, find_tag(tag, 'a')['href'])
+        response = get_response(session, pep_url)
+        if response is None:
+            continue
+        soup = BeautifulSoup(response.text, 'lxml')
+        dl_tag = find_tag(soup, 'dl')
+        dt_parent = dl_tag.find(string='Status').find_parent()
+        pep_status = dt_parent.next_sibling.next_sibling.string
+        if pep_status not in expected_status:
+            logging.info(
+                f'Несовпадающие статусы: {pep_url} '
+                f'Статус в карточке: {pep_status} '
+                f'Ожидаемые статусы: {expected_status}')
+        results[pep_status] = results.get(pep_status, 0) + 1
+        mismatch_num += 1
+    return (
+        list(results.items())
+        + [('Total', mismatch_num)]
+    )
 
 
 MODE_TO_FUNCTION = {
     'whats-new': whats_new,
     'latest-versions': latest_versions,
     'download': download,
+    'pep': pep
 }
 
 
