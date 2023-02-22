@@ -1,6 +1,7 @@
 import logging
 import re
 from urllib.parse import urljoin
+from collections import Counter
 
 import requests_cache
 from bs4 import BeautifulSoup
@@ -102,8 +103,10 @@ def pep(session):
     tbody_tag = find_tag(section_tag, 'tbody')
     tr_tags = tbody_tag.find_all('tr')
     results = [('Статус', 'Количество')]
-    mismatch_num = 0
+    number = 0
+    cnt = Counter()
     for tag in tqdm(tr_tags):
+        number += 1
         status_key = find_tag(tag, 'td').text[1:]
         expected_status = EXPECTED_STATUS.get(status_key, [])
         if not expected_status:
@@ -120,13 +123,12 @@ def pep(session):
             logging.info(
                 f'Несовпадающие статусы: {pep_url} '
                 f'Статус в карточке: {pep_status} '
-                f'Ожидаемые статусы: {expected_status}')
-        results[pep_status] = results.get(pep_status, 0) + 1
-        mismatch_num += 1
-    return (
-        list(results.items())
-        + [('Total', mismatch_num)]
-    )
+                f'Ожидаемые статусы: {expected_status}'
+                )
+        cnt[pep_status] += 1
+    results.extend(cnt.items())
+    results.append(('Total', number))
+    return results
 
 
 MODE_TO_FUNCTION = {
