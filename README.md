@@ -56,5 +56,5 @@ Optional arguments:
 
 ## Author
 
-- [Zhanna - Python-Developer](https://github.com/ZhannaVen)
+- [Zhanna Ventsenostseva](https://github.com/ZhannaVen)
 
