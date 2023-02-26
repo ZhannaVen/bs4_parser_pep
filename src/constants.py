@@ -18,8 +18,10 @@ DT_FORMAT = '%d.%m.%Y %H:%M:%S'
 
 # Phrases
 FILE_SAVED = 'Файл с результатами был сохранён: {}'
+ERROR_RESPONSE = 'Возникла ошибка при загрузке страницы {}'
 
 # Other
+UTF_8 = 'utf-8'
 PRETTY = 'pretty'
 FILE = 'file'
 EXPECTED_STATUS = {
