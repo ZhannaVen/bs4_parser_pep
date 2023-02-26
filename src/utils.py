@@ -1,7 +1,8 @@
-from requests import RequestException
-from exceptions import ParserFindTagException, ErrorResponseException
-from constants import UTF_8, ERROR_RESPONSE, TAG_NOT_FOUND
 from bs4 import BeautifulSoup
+from requests import RequestException
+
+from constants import ERROR_RESPONSE, TAG_NOT_FOUND, UTF_8
+from exceptions import ErrorResponseException, ParserFindTagException
 
 
 def get_response(session, url, coding=UTF_8):

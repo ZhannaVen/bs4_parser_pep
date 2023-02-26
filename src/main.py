@@ -1,17 +1,21 @@
 import logging
 import re
+from collections import defaultdict
 from urllib.parse import urljoin
 
 import requests_cache
-from tqdm import tqdm
 from requests import HTTPError
-from collections import defaultdict
+from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import EXPECTED_STATUS, MAIN_DOC_URL, PEP_DOC_URL, WHATSNEW_URL, NOT_FOUND_404, DOWNLOADS_URL, DOWNLOADS_DIR, UNEXPECTED_PEP_STATUS, ARCHIVE_SAVED, PARSER_STARTED, ARGS, PARSER_FINISHED, UNKNOWN_STATUS, PARSER_ERROR
+from constants import (ARCHIVE_SAVED, ARGS, DOWNLOADS_DIR, DOWNLOADS_URL,
+                       EXPECTED_STATUS, MAIN_DOC_URL, NOT_FOUND_404,
+                       PARSER_ERROR, PARSER_FINISHED, PARSER_STARTED,
+                       PEP_DOC_URL, UNEXPECTED_PEP_STATUS, UNKNOWN_STATUS,
+                       WHATSNEW_URL)
+from exceptions import ParserException
 from outputs import control_output
 from utils import find_tag, make_soup
-from exceptions import ParserException
 
 
 def whats_new(session):

@@ -1,7 +1,6 @@
 from pathlib import Path
 from urllib.parse import urljoin
 
-
 # URL's
 MAIN_DOC_URL = 'https://docs.python.org/3/'
 PEP_DOC_URL = 'https://peps.python.org/'
