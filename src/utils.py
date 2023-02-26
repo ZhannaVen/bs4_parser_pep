@@ -1,9 +1,7 @@
-import logging
-
 from requests import RequestException
-
 from exceptions import ParserFindTagException, ErrorResponseException
 from constants import UTF_8, ERROR_RESPONSE, TAG_NOT_FOUND
+from bs4 import BeautifulSoup
 
 
 def get_response(session, url, coding=UTF_8):
@@ -20,3 +18,10 @@ def find_tag(soup, tag, attrs=None):
     if searched_tag is None:
         raise ParserFindTagException(TAG_NOT_FOUND.format(tag, attrs))
     return searched_tag
+
+
+def make_soup(session, url):
+    response = get_response(session, url)
+    if response is None:
+        return
+    return BeautifulSoup(response.text, 'lxml')

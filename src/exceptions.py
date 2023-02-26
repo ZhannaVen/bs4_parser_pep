@@ -8,3 +8,6 @@ class ErrorResponseException(Exception):
     pass
 
 
+class ParserException(Exception):
+    """Вызывается, когда возникла ошибка в ходе работы парсера."""
+    pass
