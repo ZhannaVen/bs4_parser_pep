@@ -12,7 +12,7 @@ from constants import (ARCHIVE_SAVED, ARGS, DOWNLOADS_DIR, DOWNLOADS_URL,
                        EXPECTED_STATUS, MAIN_DOC_URL, NOT_FOUND_404,
                        PARSER_ERROR, PARSER_FINISHED, PARSER_STARTED,
                        PEP_DOC_URL, UNEXPECTED_PEP_STATUS, UNKNOWN_STATUS,
-                       WHATSNEW_URL)
+                       WHATSNEW_URL, BASE_DIR)
 from exceptions import ParserException
 from outputs import control_output
 from utils import find_tag, make_soup
@@ -62,11 +62,17 @@ def latest_versions(session):
 
 def download(session):
     soup = make_soup(session, DOWNLOADS_URL)
-    pdf_a4_tag = soup.select_one('table.docutils a > [href$=.zip')
+    table_tag = find_tag(soup, 'table')
+    pdf_a4_tag = find_tag(
+        table_tag,
+        'a',
+        {'href': re.compile(r'.+pdf-a4\.zip$')}
+    )
     pdf_a4_link = pdf_a4_tag['href']
     archive_url = urljoin(DOWNLOADS_URL, pdf_a4_link)
     filename = archive_url.split('/')[-1]
-    downloads_dir = DOWNLOADS_DIR
+    # пришлось убрать константу, иначе не проходят тесты
+    downloads_dir = BASE_DIR / 'downloads'
     downloads_dir.mkdir(exist_ok=True)
     archive_path = downloads_dir / filename
     response = session.get(archive_url)
