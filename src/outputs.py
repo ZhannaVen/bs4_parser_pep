@@ -5,16 +5,11 @@ import logging
 from prettytable import PrettyTable
 
 from constants import (BASE_DIR, DATETIME_FORMAT, FILE, FILE_SAVED, PRETTY,
-                       UTF_8)
+                       RESULTS, UTF_8)
 
 
 def control_output(results, cli_args):
-    outputs = {
-        FILE: file_output,
-        PRETTY: pretty_output,
-        None: default_output
-    }
-    outputs[cli_args.output](results, cli_args)
+    OUTPUTS[cli_args.output](results, cli_args)
 
 
 def default_output(results, *args):
@@ -31,8 +26,7 @@ def pretty_output(results, *args):
 
 
 def file_output(results, cli_args):
-    # пришлось убрать константу, иначе не проходят тесты
-    results_dir = BASE_DIR / 'results'
+    results_dir = BASE_DIR / RESULTS
     results_dir.mkdir(exist_ok=True)
     parser_mode = cli_args.mode
     now = dt.datetime.now()
@@ -43,3 +37,10 @@ def file_output(results, cli_args):
         writer = csv.writer(f, dialect=csv.unix_dialect)
         writer.writerows(results)
     logging.info(FILE_SAVED.format(file_path))
+
+
+OUTPUTS = {
+        FILE: file_output,
+        PRETTY: pretty_output,
+        None: default_output
+    }

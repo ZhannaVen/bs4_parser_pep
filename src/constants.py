@@ -11,8 +11,8 @@ DOWNLOADS_URL = urljoin(MAIN_DOC_URL, 'download.html')
 BASE_DIR = Path(__file__).parent
 LOG_DIR = BASE_DIR / 'logs'
 LOG_FILE = LOG_DIR / 'parser.log'
-RESULTS_DIR = BASE_DIR / 'results'
-DOWNLOADS_DIR = BASE_DIR / 'downloads'
+RESULTS = 'results'
+DOWNLOADS = 'downloads'
 
 # Formats
 DATETIME_FORMAT = '%Y-%m-%d_%H-%M-%S'
@@ -38,16 +38,17 @@ PARSER_ERROR = 'Ошибка в ходе работы парсера: {}'
 URL_NOT_FOUND = 'По этому адресу ничего не нашлось: {}'
 
 # Other
+FEATURES = 'lxml'
 UTF_8 = 'utf-8'
 PRETTY = 'pretty'
 FILE = 'file'
 EXPECTED_STATUS = {
-        'A': ['Accepted', 'Active'],
+        'A': ['Active', 'Accepted'],
         'D': ['Deferred'],
         'F': ['Final'],
         'P': ['Provisional'],
         'R': ['Rejected'],
         'S': ['Superseded'],
         'W': ['Withdrawn'],
-        '': ['Draft']
+        '': ['Draft', 'Active']
 }

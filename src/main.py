@@ -4,43 +4,50 @@ from collections import defaultdict
 from urllib.parse import urljoin
 
 import requests_cache
-from requests import HTTPError
+from requests import HTTPError, RequestException
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import (ARCHIVE_SAVED, ARGS, BASE_DIR, DOWNLOADS_URL,
+from constants import (ARCHIVE_SAVED, ARGS, BASE_DIR, DOWNLOADS, DOWNLOADS_URL,
                        EXPECTED_STATUS, MAIN_DOC_URL, NOT_FOUND_404,
                        PARSER_ERROR, PARSER_FINISHED, PARSER_STARTED,
                        PEP_DOC_URL, UNEXPECTED_PEP_STATUS, UNKNOWN_STATUS,
-                       WHATSNEW_URL)
+                       URL_NOT_FOUND, WHATSNEW_URL)
 from exceptions import ParserException
 from outputs import control_output
 from utils import find_tag, make_soup
 
 
 def whats_new(session):
-    soup = make_soup(session, WHATSNEW_URL)
-    sections_by_python = soup.select(
-        '#what-s-new-in-python div.toctree-wrapper li.toctree-l1'
-    )
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
-    for section in tqdm(sections_by_python):
+    for section in tqdm(
+        make_soup(
+            session, WHATSNEW_URL
+        ).select(
+            '#what-s-new-in-python div.toctree-wrapper li.toctree-l1'
+        )
+    ):
         version_link = urljoin(WHATSNEW_URL, section.find('a')['href'])
-        soup = make_soup(session, version_link)
-        results.append(
-            (
-                version_link,
-                find_tag(soup, 'h1').text,
-                find_tag(soup, 'dl').text.replace('\n', ' ')
-            ))
+        try:
+            soup = make_soup(session, version_link)
+            results.append(
+                (
+                    version_link,
+                    find_tag(soup, 'h1').text,
+                    find_tag(soup, 'dl').text.replace('\n', ' ')
+                ))
+        except RequestException:
+            logging.info(URL_NOT_FOUND.format(version_link))
+            continue
     return results
 
 
 def latest_versions(session):
-    soup = make_soup(session, MAIN_DOC_URL)
-    sidebar = find_tag(soup, 'div', {'class': 'sphinxsidebarwrapper'})
-    ul_tags = sidebar.find_all('ul')
-    for ul in ul_tags:
+    for ul in find_tag(
+        make_soup(session, MAIN_DOC_URL),
+        'div',
+        {'class': 'sphinxsidebarwrapper'}
+    ).find_all('ul'):
         if 'All versions' in ul.text:
             a_tags = ul.find_all('a')
             break
@@ -66,8 +73,7 @@ def download(session):
     pdf_a4_link = pdf_a4_tag['href']
     archive_url = urljoin(DOWNLOADS_URL, pdf_a4_link)
     filename = archive_url.split('/')[-1]
-    # пришлось убрать константу, иначе не проходят тесты
-    downloads_dir = BASE_DIR / 'downloads'
+    downloads_dir = BASE_DIR / DOWNLOADS
     downloads_dir.mkdir(exist_ok=True)
     archive_path = downloads_dir / filename
     response = session.get(archive_url)
@@ -77,29 +83,37 @@ def download(session):
 
 
 def pep(session):
-    soup = make_soup(session, PEP_DOC_URL)
-    section_tag = find_tag(soup, 'section', attrs={'id': 'numerical-index'})
-    tbody_tag = find_tag(section_tag, 'tbody')
-    tr_tags = tbody_tag.find_all('tr')
     results = defaultdict()
-    for tag in tqdm(tr_tags):
+    postponed_logs = []
+    for tag in tqdm(
+        make_soup(
+            session, PEP_DOC_URL
+        ).select(
+            '#numerical-index tbody tr'
+        )
+    ):
         status_key = find_tag(tag, 'td').text[1:]
         expected_status = EXPECTED_STATUS.get(status_key, [])
         if not expected_status:
-            logging.info(UNKNOWN_STATUS.format(status_key))
+            postponed_logs.append(UNKNOWN_STATUS.format(status_key))
         pep_url = urljoin(PEP_DOC_URL, find_tag(tag, 'a')['href'])
-        soup = make_soup(session, pep_url)
+        try:
+            soup = make_soup(session, pep_url)
+        except RequestException:
+            postponed_logs.append(URL_NOT_FOUND.format(pep_url))
+            continue
         dl_tag = find_tag(soup, 'dl')
         dt_parent = dl_tag.find(string='Status').find_parent()
         pep_status = dt_parent.next_sibling.next_sibling.string
         if pep_status in expected_status:
-            results[pep_status] += 1
+            results[pep_status] = results.get(pep_status, 0) + 1
         else:
-            logging.info(UNEXPECTED_PEP_STATUS.format(
+            postponed_logs.append(UNEXPECTED_PEP_STATUS.format(
                 pep_url,
                 pep_status,
                 expected_status
             ))
+    logging.info(postponed_logs)
     return [
         ('Статус', 'Количество'),
         *results.items(),
@@ -131,7 +145,7 @@ def main():
             control_output(results, args)
     except ParserException:
         logging.exception(
-            PARSER_ERROR, stack_info=True, exc_info=True)
+            PARSER_ERROR.format(ParserException.__doc__))
     logging.info(PARSER_FINISHED)
 
 
