@@ -8,11 +8,11 @@ from requests import HTTPError
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import (ARCHIVE_SAVED, ARGS, DOWNLOADS_DIR, DOWNLOADS_URL,
+from constants import (ARCHIVE_SAVED, ARGS, BASE_DIR, DOWNLOADS_URL,
                        EXPECTED_STATUS, MAIN_DOC_URL, NOT_FOUND_404,
                        PARSER_ERROR, PARSER_FINISHED, PARSER_STARTED,
                        PEP_DOC_URL, UNEXPECTED_PEP_STATUS, UNKNOWN_STATUS,
-                       WHATSNEW_URL, BASE_DIR)
+                       WHATSNEW_URL)
 from exceptions import ParserException
 from outputs import control_output
 from utils import find_tag, make_soup
@@ -62,12 +62,7 @@ def latest_versions(session):
 
 def download(session):
     soup = make_soup(session, DOWNLOADS_URL)
-    table_tag = find_tag(soup, 'table')
-    pdf_a4_tag = find_tag(
-        table_tag,
-        'a',
-        {'href': re.compile(r'.+pdf-a4\.zip$')}
-    )
+    pdf_a4_tag = soup.select_one('table.docutils td > [href$="pdf-a4.zip"]')
     pdf_a4_link = pdf_a4_tag['href']
     archive_url = urljoin(DOWNLOADS_URL, pdf_a4_link)
     filename = archive_url.split('/')[-1]
