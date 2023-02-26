@@ -10,13 +10,14 @@ BASE_DIR = Path(__file__).parent
 LOG_DIR = BASE_DIR / 'logs'
 LOG_FILE = LOG_DIR / 'parser.log'
 
+#Formats
+DATETIME_FORMAT = '%Y-%m-%d_%H-%M-%S'
+LOG_FORMAT = '"%(asctime)s - [%(levelname)s] - %(message)s"'
+DT_FORMAT = '%d.%m.%Y %H:%M:%S'
+
 #Other
 PRETTY = 'pretty'
 FILE = 'file'
-
-
-
-DATETIME_FORMAT = '%Y-%m-%d_%H-%M-%S'
 EXPECTED_STATUS = {
         'A': ['Accepted', 'Active'],
         'D': ['Deferred'],
