@@ -11,6 +11,11 @@ LOG_DIR = BASE_DIR / 'logs'
 LOG_FILE = LOG_DIR / 'parser.log'
 
 #Other
+PRETTY = 'pretty'
+FILE = 'file'
+
+
+
 DATETIME_FORMAT = '%Y-%m-%d_%H-%M-%S'
 EXPECTED_STATUS = {
         'A': ['Accepted', 'Active'],
@@ -20,4 +25,5 @@ EXPECTED_STATUS = {
         'R': ['Rejected'],
         'S': ['Superseded'],
         'W': ['Withdrawn'],
-        '': ['Draft']}
+        '': ['Draft']
+}
