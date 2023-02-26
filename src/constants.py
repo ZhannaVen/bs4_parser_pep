@@ -19,6 +19,7 @@ DT_FORMAT = '%d.%m.%Y %H:%M:%S'
 # Phrases
 FILE_SAVED = 'Файл с результатами был сохранён: {}'
 ERROR_RESPONSE = 'Возникла ошибка при загрузке страницы {}'
+TAG_NOT_FOUND = 'Не найден тег {} {}'
 
 # Other
 UTF_8 = 'utf-8'
