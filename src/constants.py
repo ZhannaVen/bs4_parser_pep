@@ -38,10 +38,8 @@ PARSER_ERROR = 'Ошибка в ходе работы парсера: {}'
 URL_NOT_FOUND = 'По этому адресу ничего не нашлось: {}'
 
 # Other
-FEATURES = 'lxml'
-UTF_8 = 'utf-8'
-PRETTY = 'pretty'
-FILE = 'file'
+TABLE_OUTPUT = 'pretty'
+FILE_OUTPUT = 'file'
 EXPECTED_STATUS = {
         'A': ['Active', 'Accepted'],
         'D': ['Deferred'],

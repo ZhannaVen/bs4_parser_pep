@@ -13,13 +13,14 @@ from constants import (ARCHIVE_SAVED, ARGS, BASE_DIR, DOWNLOADS, DOWNLOADS_URL,
                        PARSER_ERROR, PARSER_FINISHED, PARSER_STARTED,
                        PEP_DOC_URL, UNEXPECTED_PEP_STATUS, UNKNOWN_STATUS,
                        URL_NOT_FOUND, WHATSNEW_URL)
-from exceptions import ParserException
+from exceptions import ParserException, ParserFindTagException
 from outputs import control_output
 from utils import find_tag, make_soup
 
 
 def whats_new(session):
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
+    logs = []
     for section in tqdm(
         make_soup(
             session, WHATSNEW_URL
@@ -37,22 +38,22 @@ def whats_new(session):
                     find_tag(soup, 'dl').text.replace('\n', ' ')
                 ))
         except RequestException:
-            logging.info(URL_NOT_FOUND.format(version_link))
-            continue
+            logs.append(URL_NOT_FOUND.format(version_link))
+    logging.info(logs)
     return results
 
 
 def latest_versions(session):
-    for ul in find_tag(
-        make_soup(session, MAIN_DOC_URL),
-        'div',
-        {'class': 'sphinxsidebarwrapper'}
-    ).find_all('ul'):
+    for ul in make_soup(
+        session, MAIN_DOC_URL
+    ).select(
+        'div.sphinxsidebarwrapper ul'
+    ):
         if 'All versions' in ul.text:
             a_tags = ul.find_all('a')
             break
     else:
-        raise HTTPError(NOT_FOUND_404)
+        raise ParserFindTagException(NOT_FOUND_404)
     results = [('Ссылка на документацию', 'Версия', 'Статус')]
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
     for a_tag in a_tags:

@@ -4,8 +4,8 @@ import logging
 
 from prettytable import PrettyTable
 
-from constants import (BASE_DIR, DATETIME_FORMAT, FILE, FILE_SAVED, PRETTY,
-                       RESULTS, UTF_8)
+from constants import (BASE_DIR, DATETIME_FORMAT, FILE_OUTPUT, FILE_SAVED, TABLE_OUTPUT,
+                       RESULTS)
 
 
 def control_output(results, cli_args):
@@ -33,14 +33,14 @@ def file_output(results, cli_args):
     now_formatted = now.strftime(DATETIME_FORMAT)
     file_name = f'{parser_mode}_{now_formatted}.csv'
     file_path = results_dir / file_name
-    with open(file_path, 'w', encoding=UTF_8) as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         writer = csv.writer(f, dialect=csv.unix_dialect)
         writer.writerows(results)
     logging.info(FILE_SAVED.format(file_path))
 
 
 OUTPUTS = {
-        FILE: file_output,
-        PRETTY: pretty_output,
+        FILE_OUTPUT: file_output,
+        TABLE_OUTPUT: pretty_output,
         None: default_output
     }

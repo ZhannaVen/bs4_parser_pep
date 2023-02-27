@@ -1,14 +1,14 @@
 from bs4 import BeautifulSoup
 from requests import HTTPError, RequestException
 
-from constants import ERROR_RESPONSE, FEATURES, TAG_NOT_FOUND, UTF_8
+from constants import ERROR_RESPONSE, TAG_NOT_FOUND
 from exceptions import ParserFindTagException
 
 
-def get_response(session, url, coding=UTF_8):
+def get_response(session, url, encoding='utf-8'):
     try:
         response = session.get(url)
-        response.encoding = coding
+        response.encoding = encoding
         return response
     except RequestException:
         raise HTTPError(ERROR_RESPONSE.format(url))
@@ -23,4 +23,4 @@ def find_tag(soup, tag, attrs=None):
 
 def make_soup(session, url):
     response = get_response(session, url)
-    return BeautifulSoup(response.text, features=FEATURES)
+    return BeautifulSoup(response.text, features='lxml')
