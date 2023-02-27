@@ -40,7 +40,7 @@ def file_output(results, cli_args):
 
 
 OUTPUTS = {
-        FILE_OUTPUT: file_output,
-        TABLE_OUTPUT: pretty_output,
-        None: default_output
-    }
+    FILE_OUTPUT: file_output,
+    TABLE_OUTPUT: pretty_output,
+    None: default_output
+}
