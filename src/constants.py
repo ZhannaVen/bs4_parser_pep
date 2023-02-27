@@ -41,7 +41,7 @@ URL_NOT_FOUND = 'По этому адресу ничего не нашлось: 
 TABLE_OUTPUT = 'pretty'
 FILE_OUTPUT = 'file'
 EXPECTED_STATUS = {
-        'A': ['Active', 'Accepted'],
+        'A': ['Accepted', 'Active'],
         'D': ['Deferred'],
         'F': ['Final'],
         'P': ['Provisional'],

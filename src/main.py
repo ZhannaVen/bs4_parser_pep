@@ -4,7 +4,7 @@ from collections import defaultdict
 from urllib.parse import urljoin
 
 import requests_cache
-from requests import HTTPError, RequestException
+from requests import RequestException
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
@@ -39,7 +39,8 @@ def whats_new(session):
                 ))
         except RequestException:
             logs.append(URL_NOT_FOUND.format(version_link))
-    logging.info(logs)
+    for log in logs:
+        logging.info(log)
     return results
 
 
@@ -69,10 +70,12 @@ def latest_versions(session):
 
 
 def download(session):
-    soup = make_soup(session, DOWNLOADS_URL)
-    pdf_a4_tag = soup.select_one('table.docutils td > [href$="pdf-a4.zip"]')
-    pdf_a4_link = pdf_a4_tag['href']
-    archive_url = urljoin(DOWNLOADS_URL, pdf_a4_link)
+    pdf_a4_tag = make_soup(
+        session, DOWNLOADS_URL
+    ).select_one(
+        'table.docutils td > [href$="pdf-a4.zip"]'
+    )
+    archive_url = urljoin(DOWNLOADS_URL, pdf_a4_tag['href'])
     filename = archive_url.split('/')[-1]
     downloads_dir = BASE_DIR / DOWNLOADS
     downloads_dir.mkdir(exist_ok=True)
@@ -85,7 +88,7 @@ def download(session):
 
 def pep(session):
     results = defaultdict()
-    postponed_logs = []
+    logs = []
     for tag in tqdm(
         make_soup(
             session, PEP_DOC_URL
@@ -96,25 +99,29 @@ def pep(session):
         status_key = find_tag(tag, 'td').text[1:]
         expected_status = EXPECTED_STATUS.get(status_key, [])
         if not expected_status:
-            postponed_logs.append(UNKNOWN_STATUS.format(status_key))
+            logs.append(UNKNOWN_STATUS.format(status_key))
         pep_url = urljoin(PEP_DOC_URL, find_tag(tag, 'a')['href'])
         try:
             soup = make_soup(session, pep_url)
         except RequestException:
-            postponed_logs.append(URL_NOT_FOUND.format(pep_url))
+            logs.append(URL_NOT_FOUND.format(pep_url))
             continue
         dl_tag = find_tag(soup, 'dl')
         dt_parent = dl_tag.find(string='Status').find_parent()
         pep_status = dt_parent.next_sibling.next_sibling.string
         if pep_status in expected_status:
-            results[pep_status] = results.get(pep_status, 0) + 1
+            if pep_status in results.keys():
+                results[pep_status] += 1
+            else:
+                results[pep_status] = 1
         else:
-            postponed_logs.append(UNEXPECTED_PEP_STATUS.format(
+            logs.append(UNEXPECTED_PEP_STATUS.format(
                 pep_url,
                 pep_status,
                 expected_status
             ))
-    logging.info(postponed_logs)
+    for log in logs:
+        logging.info(log)
     return [
         ('Статус', 'Количество'),
         *results.items(),
@@ -144,9 +151,9 @@ def main():
         results = MODE_TO_FUNCTION[parser_mode](session)
         if results is not None:
             control_output(results, args)
-    except ParserException:
+    except Exception as exception:
         logging.exception(
-            PARSER_ERROR.format(ParserException.__doc__))
+            PARSER_ERROR.format(exception))
     logging.info(PARSER_FINISHED)
 
 
