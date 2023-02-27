@@ -13,7 +13,7 @@ from constants import (ARCHIVE_SAVED, ARGS, BASE_DIR, DOWNLOADS, DOWNLOADS_URL,
                        PARSER_ERROR, PARSER_FINISHED, PARSER_STARTED,
                        PEP_DOC_URL, UNEXPECTED_PEP_STATUS, UNKNOWN_STATUS,
                        URL_NOT_FOUND, WHATSNEW_URL)
-from exceptions import ParserException, ParserFindTagException
+from exceptions import ParserFindTagException
 from outputs import control_output
 from utils import find_tag, make_soup
 
