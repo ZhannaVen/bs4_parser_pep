@@ -21,6 +21,5 @@ def find_tag(soup, tag, attrs=None):
     return searched_tag
 
 
-def make_soup(session, url):
-    response = get_response(session, url)
-    return BeautifulSoup(response.text, features='lxml')
+def make_soup(session, url, method='lxml'):
+    return BeautifulSoup(get_response(session, url).text, features=method)
