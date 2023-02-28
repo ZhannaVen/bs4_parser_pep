@@ -4,7 +4,6 @@ from collections import defaultdict
 from urllib.parse import urljoin
 
 import requests_cache
-from requests import RequestException
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
@@ -13,7 +12,7 @@ from constants import (ARCHIVE_SAVED, ARGS, BASE_DIR, DOWNLOADS, DOWNLOADS_URL,
                        PARSER_ERROR, PARSER_FINISHED, PARSER_STARTED,
                        PEP_DOC_URL, UNEXPECTED_PEP_STATUS, UNKNOWN_STATUS,
                        URL_NOT_FOUND, WHATSNEW_URL)
-from exceptions import ParserFindTagException
+from exceptions import ParserFindListException, ParserFindStatusException
 from outputs import control_output
 from utils import find_tag, make_soup
 
@@ -37,7 +36,7 @@ def whats_new(session):
                     find_tag(soup, 'h1').text,
                     find_tag(soup, 'dl').text.replace('\n', ' ')
                 ))
-        except RequestException:
+        except ConnectionError:
             logs.append(URL_NOT_FOUND.format(version_link))
     for log in logs:
         logging.info(log)
@@ -54,7 +53,7 @@ def latest_versions(session):
             a_tags = ul.find_all('a')
             break
     else:
-        raise ParserFindTagException(NOT_FOUND_404)
+        raise ParserFindListException(NOT_FOUND_404)
     results = [('Ссылка на документацию', 'Версия', 'Статус')]
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
     for a_tag in a_tags:
@@ -87,7 +86,7 @@ def download(session):
 
 
 def pep(session):
-    results = defaultdict()
+    results = defaultdict(int)
     logs = []
     for tag in tqdm(
         make_soup(
@@ -102,18 +101,14 @@ def pep(session):
             logs.append(UNKNOWN_STATUS.format(status_key))
         pep_url = urljoin(PEP_DOC_URL, find_tag(tag, 'a')['href'])
         try:
-            soup = make_soup(session, pep_url)
-        except RequestException:
+            dl_tag = find_tag(make_soup(session, pep_url), 'dl')
+            dt_parent = dl_tag.find(string='Status').find_parent()
+            pep_status = dt_parent.next_sibling.next_sibling.string
+        except ParserFindStatusException:
             logs.append(URL_NOT_FOUND.format(pep_url))
             continue
-        dl_tag = find_tag(soup, 'dl')
-        dt_parent = dl_tag.find(string='Status').find_parent()
-        pep_status = dt_parent.next_sibling.next_sibling.string
         if pep_status in expected_status:
-            if pep_status in results.keys():
-                results[pep_status] += 1
-            else:
-                results[pep_status] = 1
+            results[pep_status] += 1
         else:
             logs.append(UNEXPECTED_PEP_STATUS.format(
                 pep_url,
@@ -152,8 +147,7 @@ def main():
         if results is not None:
             control_output(results, args)
     except Exception as exception:
-        logging.exception(
-            PARSER_ERROR.format(exception))
+        logging.exception(PARSER_ERROR.format(exception))
     logging.info(PARSER_FINISHED)
 
 
