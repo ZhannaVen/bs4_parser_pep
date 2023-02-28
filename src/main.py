@@ -12,7 +12,7 @@ from constants import (ARCHIVE_SAVED, ARGS, BASE_DIR, DOWNLOADS, DOWNLOADS_URL,
                        PARSER_ERROR, PARSER_FINISHED, PARSER_STARTED,
                        PEP_DOC_URL, UNEXPECTED_PEP_STATUS, UNKNOWN_STATUS,
                        URL_NOT_FOUND, WHATSNEW_URL)
-from exceptions import ParserFindListException, ParserFindStatusException
+from exceptions import ParserFindListException
 from outputs import control_output
 from utils import find_tag, make_soup
 
@@ -104,7 +104,7 @@ def pep(session):
             dl_tag = find_tag(make_soup(session, pep_url), 'dl')
             dt_parent = dl_tag.find(string='Status').find_parent()
             pep_status = dt_parent.next_sibling.next_sibling.string
-        except ParserFindStatusException:
+        except ConnectionError:
             logs.append(URL_NOT_FOUND.format(pep_url))
             continue
         if pep_status in expected_status:

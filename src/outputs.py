@@ -8,10 +8,6 @@ from constants import (BASE_DIR, DATETIME_FORMAT, FILE_OUTPUT, FILE_SAVED,
                        RESULTS, TABLE_OUTPUT)
 
 
-def control_output(results, cli_args):
-    OUTPUTS[cli_args.output](results, cli_args)
-
-
 def default_output(results, *args):
     for row in results:
         print(*row)
@@ -44,3 +40,7 @@ OUTPUTS = {
     TABLE_OUTPUT: pretty_output,
     None: default_output
 }
+
+
+def control_output(results, cli_args):
+    OUTPUTS[cli_args.output](results, cli_args)

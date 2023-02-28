@@ -8,11 +8,6 @@ class ParserFindListException(Exception):
     pass
 
 
-class ParserFindStatusException(Exception):
-    """Вызывается, когда парсер не может найти список."""
-    pass
-
-
 class ErrorResponseException(Exception):
     """Вызывается, когда возникла ошибка при загрузке страницы."""
     pass
