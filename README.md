@@ -2,6 +2,10 @@
 
 ### Description
 
+A tutorial project for creating parsers.
+
+Python documentation is parsed: PEP, version, update, documentation archive.
+
 The project implements parsing of command line arguments to select the program operation mode. There are four modes available in total:
 
 - whats-new (links to articles about innovations in Python)
